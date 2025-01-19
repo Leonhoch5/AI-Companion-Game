@@ -74,8 +74,29 @@ const player = {
     loadedSprites: loadedPlayerSpriteSheets,
     health: 100,
     maxHealth: 100,
-    attackCooldown: 0, // Add an attack cooldown timer to the player
+    attackCooldown: 0,
+    checkpoint: { x: canvas.width / 4, y: groundY - 128 }, // Initial checkpoint
+    isRespawning: false, // Respawn state
 };
+
+// Function to reset player to the last checkpoint
+function respawnPlayer() {
+    player.health = player.maxHealth;
+    player.x = player.checkpoint.x;
+    player.y = player.checkpoint.y;
+    player.state = "idle";
+    player.isRespawning = false; // End respawn process
+}
+
+// Function to handle player death
+function checkPlayerDeath() {
+    if (player.health <= 0 && !player.isRespawning) {
+        player.isRespawning = true; // Prevent multiple respawn triggers
+        setTimeout(() => {
+            respawnPlayer();
+        }, 1000); // Delay for respawn
+    }
+}
 
 // AI companion properties
 const ai = {
@@ -445,6 +466,8 @@ function animate() {
     updateZombies();
     updateCombat();
 
+    checkPlayerDeath(); // Check if player needs to respawn
+
     updateState(player, keys);
     updateState(ai, {});
 
@@ -457,5 +480,14 @@ function animate() {
 
     requestAnimationFrame(animate);
 }
+
+// Example checkpoint trigger
+document.addEventListener("keydown", (e) => {
+    if (e.key === "c") {
+        // Set checkpoint at the current position
+        player.checkpoint = { x: player.x, y: player.y };
+        console.log("Checkpoint set:", player.checkpoint);
+    }
+});
 
 animate();
