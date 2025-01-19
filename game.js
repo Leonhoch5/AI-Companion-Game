@@ -34,10 +34,32 @@ const zombieSpriteSheets = {
   attack: { src: "/assets/character/Zombie/Attack_2.png", frameWidth: 96, frameHeight: 96, frameCount: 4 },
   hurt: { src: "/assets/character/Zombie/Hurt.png", frameWidth: 96, frameHeight: 96, frameCount: 3 },
 };
+const cardSpriteSheets = {
+    rotating: { src: "/assets/map/Card.png", frameWidth: 24, frameHeight: 24, frameCount: 8},
+};
+
+const checkpointSpriteSheet = {
+  src: "/assets/map/Checkpoint.png", // Replace with your checkpoint sprite image
+  frameWidth: 48,
+  frameHeight: 48,
+  frameCount: 1, 
+};
+
+const loadedCheckpointSpriteSheet = new Image();
+loadedCheckpointSpriteSheet.src = checkpointSpriteSheet.src;
+loadedCheckpointSpriteSheet.onerror = () =>
+  console.error(`Failed to load ${checkpointSpriteSheet.src}`);
+
+const checkpoints = [
+  { x: canvas.width / 2, y: groundY - 100, frame: 0, lastFrameChange: performance.now(), activated: false },
+  { x: canvas.width / 1.5, y: groundY - 100, frame: 0, lastFrameChange: performance.now(), activated: false },
+];
+
 // Preload all sprite sheets
 const loadedPlayerSpriteSheets = {};
 const loadedAISpriteSheets = {};
 const loadedZombieSpriteSheets = {};
+const loadedCardSpriteSheets = {};
 
 
 function preloadSpriteSheets(spriteSheets, loadedSheets) {
@@ -48,11 +70,82 @@ function preloadSpriteSheets(spriteSheets, loadedSheets) {
     loadedSheets[state] = img;
   });
 }
-
 preloadSpriteSheets(playerSpriteSheets, loadedPlayerSpriteSheets);
 preloadSpriteSheets(aiSpriteSheets, loadedAISpriteSheets);
 preloadSpriteSheets(zombieSpriteSheets, loadedZombieSpriteSheets);
+preloadSpriteSheets(cardSpriteSheets, loadedCardSpriteSheets);
 
+// Function to spawn a wave of zombies
+function spawnZombieWave(count) {
+  for (let i = 0; i < count; i++) {
+    const zombieX = Math.random() > 0.5 ? -128 : canvas.width; // Spawn left or right
+    zombies.push(createZombie(zombieX, groundY - 128));
+  }
+}
+
+// Example usage: spawn a wave of 5 zombies every 10 seconds
+setInterval(() => {
+  spawnZombieWave(5);
+}, 10000);
+
+// Finish line properties
+const finishLine = {
+    x: canvas.width - 150, // Near the end of the level
+    y: groundY - 150, // Above the ground
+    width: 48,
+    height: 48,
+    spriteSheets: cardSpriteSheets,
+    loadedSprites: loadedCardSpriteSheets,
+    frame: 0,
+    lastFrameChange: performance.now(),
+    frameInterval: 100, // Time between frames in milliseconds
+};
+
+// Function to check if player reaches the finish line
+function checkFinishLine() {
+    if (
+        player.x < finishLine.x + finishLine.width &&
+        player.x + player.width > finishLine.x &&
+        player.y < finishLine.y + finishLine.height &&
+        player.y + player.height > finishLine.y
+    ) {
+        console.log("Level Complete!");
+        loadNextLevel();
+    }
+}
+
+// Function to animate and draw the finish line
+function drawFinishLine() {
+    const spriteSheet = finishLine.loadedSprites["rotating"];
+    const { frameWidth, frameHeight, frameCount } = finishLine.spriteSheets["rotating"];
+    const currentTime = performance.now();
+
+    if (currentTime - finishLine.lastFrameChange > finishLine.frameInterval) {
+        finishLine.frame = (finishLine.frame + 1) % frameCount; // Loop through frames
+        finishLine.lastFrameChange = currentTime;
+    }
+
+    ctx.drawImage(
+        spriteSheet,
+        finishLine.frame * frameWidth, // Frame x position on sprite sheet
+        0,                             // Frame y position
+        frameWidth,
+        frameHeight,
+        finishLine.x,
+        finishLine.y,
+        finishLine.width,
+        finishLine.height
+    );
+}
+
+// Function to load the next level
+function loadNextLevel() {
+    currentLevel++;
+    if (currentLevel > 2) { // Assuming you have 2 levels
+        currentLevel = 1; // Loop back to the first level
+    }
+    loadLevel(currentLevel);
+}
 
 // Player properties
 const player = {
@@ -212,7 +305,6 @@ function updatePlayer() {
         player.dy += player.gravity;
     }
     player.y += player.dy;
-
     if (player.y + player.height >= groundY) {
         player.dy = 0;
         player.isJumping = false;
@@ -444,6 +536,55 @@ function drawZombies() {
     });
 }
 
+function drawCheckpoints() {
+  checkpoints.forEach((checkpoint) => {
+    const currentTime = performance.now();
+    const { frameWidth, frameHeight, frameCount } = checkpointSpriteSheet;
+
+    // Animate the checkpoint if it's not activated
+    if (currentTime - checkpoint.lastFrameChange > 100) {
+      checkpoint.frame = (checkpoint.frame + 1) % frameCount;
+      checkpoint.lastFrameChange = currentTime;
+    }
+
+    const spriteX = checkpoint.frame * frameWidth;
+
+    ctx.drawImage(
+      loadedCheckpointSpriteSheet,
+      spriteX,
+      0,
+      frameWidth,
+      frameHeight,
+      checkpoint.x,
+      checkpoint.y,
+      frameWidth,
+      frameHeight
+    );
+
+    if (checkpoint.activated) {
+      ctx.strokeStyle = "yellow"; // Indicate activation
+      ctx.lineWidth = 2;
+      ctx.strokeRect(checkpoint.x, checkpoint.y, frameWidth, frameHeight);
+    }
+  });
+}
+
+function checkCheckpoints() {
+  checkpoints.forEach((checkpoint) => {
+    if (
+      player.x < checkpoint.x + checkpointSpriteSheet.frameWidth &&
+      player.x + player.width > checkpoint.x &&
+      player.y < checkpoint.y + checkpointSpriteSheet.frameHeight &&
+      player.y + player.height > checkpoint.y &&
+      !checkpoint.activated
+    ) {
+      checkpoint.activated = true;
+      player.checkpoint = { x: checkpoint.x, y: checkpoint.y };
+      console.log("Checkpoint activated at:", player.checkpoint);
+    }
+  });
+}
+
 let gameRunning = false;
 let gamePaused = false;
 
@@ -467,6 +608,8 @@ function animate() {
     updateCombat();
 
     checkPlayerDeath(); // Check if player needs to respawn
+    checkFinishLine(); // Check if player reaches the finish line
+    checkCheckpoints(); // Check player interaction with checkpoints
 
     updateState(player, keys);
     updateState(ai, {});
@@ -474,6 +617,8 @@ function animate() {
     drawEntity(player, ctx);
     drawEntity(ai, ctx);
     drawZombies();
+    drawFinishLine(); // Draw the finish line
+    drawCheckpoints(); // Draw checkpoints
 
     drawHealthBar(player, ctx);
     drawHealthBar(ai, ctx);
@@ -481,13 +626,20 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// Example checkpoint trigger
-document.addEventListener("keydown", (e) => {
-    if (e.key === "c") {
-        // Set checkpoint at the current position
-        player.checkpoint = { x: player.x, y: player.y };
-        console.log("Checkpoint set:", player.checkpoint);
-    }
-});
+
+
+let currentLevel = 1;
+
+function loadLevel(levelNumber) {
+    const script = document.createElement('script');
+    script.src = `levels/level${levelNumber}.js`;
+    script.onload = () => {
+        window[`loadLevel${levelNumber}`]();
+    };
+    document.body.appendChild(script);
+}
+
+// Initialize the first level
+loadLevel(currentLevel);
 
 animate();
