@@ -35,7 +35,11 @@ const zombieSpriteSheets = {
   hurt: { src: "/assets/character/Zombie/Hurt.png", frameWidth: 96, frameHeight: 96, frameCount: 3 },
 };
 const cardSpriteSheets = {
-    rotating: { src: "/assets/map/Card.png", frameWidth: 24, frameHeight: 24, frameCount: 8},
+    rotating: { src: "/assets/map/Walls2.png", frameWidth: 64, frameHeight: 64, frameCount: 1},
+};
+
+const startDoorSpriteSheets = {
+    rotating: { src: "/assets/map/Walls1.png", frameWidth: 64, frameHeight: 64, frameCount: 1},
 };
 
 const checkpointSpriteSheet = {
@@ -44,6 +48,34 @@ const checkpointSpriteSheet = {
   frameHeight: 48,
   frameCount: 1, 
 };
+
+// Define the money sprite sheet
+const moneySpriteSheet = {
+  src: "/assets/map/Money.png", // Replace with your money sprite image
+  frameWidth: 24,
+  frameHeight: 24,
+  frameCount: 6,
+};
+
+
+let money = 0; // Initialize money score
+
+// Function to add money
+function addMoney(amount) {
+    money += amount;
+    console.log(`Added ${amount} money. Total money: ${money}`);
+}
+
+function spendMoney(amount) {
+    if (amount <= money) {
+        money -= amount;
+        console.log(`Spent ${amount} money. Total money: ${money}`);
+    } else {
+        console.log(`Not enough money to spend. Total money: ${money}`);
+    }
+}
+
+
 
 const loadedCheckpointSpriteSheet = new Image();
 loadedCheckpointSpriteSheet.src = checkpointSpriteSheet.src;
@@ -60,7 +92,8 @@ const loadedPlayerSpriteSheets = {};
 const loadedAISpriteSheets = {};
 const loadedZombieSpriteSheets = {};
 const loadedCardSpriteSheets = {};
-
+const loadedMoneySpriteSheets = {};
+const loadedStartDoorSpriteSheets = {};
 
 function preloadSpriteSheets(spriteSheets, loadedSheets) {
   Object.keys(spriteSheets).forEach((state) => {
@@ -74,28 +107,49 @@ preloadSpriteSheets(playerSpriteSheets, loadedPlayerSpriteSheets);
 preloadSpriteSheets(aiSpriteSheets, loadedAISpriteSheets);
 preloadSpriteSheets(zombieSpriteSheets, loadedZombieSpriteSheets);
 preloadSpriteSheets(cardSpriteSheets, loadedCardSpriteSheets);
+preloadSpriteSheets(startDoorSpriteSheets, loadedStartDoorSpriteSheets);
+preloadSpriteSheets(moneySpriteSheet, loadedMoneySpriteSheets);
+
+const loadedMoneySpriteSheet = new Image();
+loadedMoneySpriteSheet.src = moneySpriteSheet.src;
+loadedMoneySpriteSheet.onerror = () =>
+  console.error(`Failed to load ${moneySpriteSheet.src}`);
 
 // Function to spawn a wave of zombies
-function spawnZombieWave(count) {
-  for (let i = 0; i < count; i++) {
-    const zombieX = Math.random() > 0.5 ? -128 : canvas.width; // Spawn left or right
-    zombies.push(createZombie(zombieX, groundY - 128));
-  }
+function spawnZombieWave(count, interval) {
+    let spawned = 0;
+    const spawnInterval = setInterval(() => {
+        if (spawned >= count) {
+            clearInterval(spawnInterval);
+            return;
+        }
+        const zombieX = Math.random() > 0.5 ? -128 : canvas.width; // Spawn left or right
+        zombies.push(createZombie(zombieX, groundY - 128));
+        spawned++;
+    }, interval);
 }
 
-// Example usage: spawn a wave of 5 zombies every 10 seconds
-setInterval(() => {
-  spawnZombieWave(5);
-}, 10000);
 
 // Finish line properties
 const finishLine = {
-    x: canvas.width - 150, // Near the end of the level
-    y: groundY - 150, // Above the ground
-    width: 48,
-    height: 48,
+    x: canvas.width - 63, // Near the end of the level
+    y: groundY - 93, // Above the ground
+    width: 96,
+    height: 96,
     spriteSheets: cardSpriteSheets,
     loadedSprites: loadedCardSpriteSheets,
+    frame: 0,
+    lastFrameChange: performance.now(),
+    frameInterval: 100, // Time between frames in milliseconds
+};
+
+const StartDoor = {
+    x: -35, // Near the start of the level
+    y: groundY - 93, // Above the ground
+    width: 96,
+    height: 96,
+    spriteSheets: startDoorSpriteSheets,
+    loadedSprites: loadedStartDoorSpriteSheets,
     frame: 0,
     lastFrameChange: performance.now(),
     frameInterval: 100, // Time between frames in milliseconds
@@ -115,7 +169,31 @@ function checkFinishLine() {
 }
 
 // Function to animate and draw the finish line
+function drawStartDoor() {
+    const spriteSheet = StartDoor.loadedSprites["rotating"];
+    const { frameWidth, frameHeight, frameCount } = StartDoor.spriteSheets["rotating"];
+    const currentTime = performance.now();
+
+    if (currentTime - StartDoor.lastFrameChange > StartDoor.frameInterval) {
+        StartDoor.frame = (StartDoor.frame + 1) % frameCount; // Loop through frames
+        StartDoor.lastFrameChange = currentTime;
+    }
+
+    ctx.drawImage(
+        spriteSheet,
+        StartDoor.frame * frameWidth, // Frame x position on sprite sheet
+        0,                             // Frame y position
+        frameWidth,
+        frameHeight,
+        StartDoor.x,
+        StartDoor.y,
+        StartDoor.width,
+        StartDoor.height
+    );
+}
+
 function drawFinishLine() {
+
     const spriteSheet = finishLine.loadedSprites["rotating"];
     const { frameWidth, frameHeight, frameCount } = finishLine.spriteSheets["rotating"];
     const currentTime = performance.now();
@@ -137,6 +215,7 @@ function drawFinishLine() {
         finishLine.height
     );
 }
+
 
 // Function to load the next level
 function loadNextLevel() {
@@ -172,7 +251,6 @@ const player = {
     isRespawning: false, // Respawn state
 };
 
-// Function to reset player to the last checkpoint
 function respawnPlayer() {
     player.health = player.maxHealth;
     player.x = player.checkpoint.x;
@@ -239,11 +317,7 @@ function createZombie(x, y) {
     };
 }
 
-// Spawn zombies periodically
-setInterval(() => {
-    const zombieX = Math.random() > 0.5 ? -128 : canvas.width; // Spawn left or right
-    zombies.push(createZombie(zombieX, groundY - 128));
-}, 3000);
+
 
 // Keyboard input handling
 let keys = {};
@@ -341,7 +415,6 @@ function updateAI() {
         updateDirection(ai, player);
     } else {
         updateDirection(ai, player);
-        console.log(ai.dx)
         ai.state = "idle";
     }
 
@@ -427,6 +500,7 @@ function drawMenu() {
     ctx.fillText("Press 'K' to Start", canvas.width / 2, canvas.height / 2 - 50);
 }
 
+
 function drawPauseMenu() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -484,13 +558,13 @@ function handleCombat(attacker, target, cooldownInSec, damage) {
 // Update zombies
 function updateZombies() {
     zombies.forEach((zombie, index) => {
-        if (zombie.health <= 0) {
+        if (zombie.health <= 0 || zombie.health == "NaN") {
             zombies.splice(index, 1); 
             return;
         }
 
         const target = Math.abs(player.x - zombie.x) < Math.abs(ai.x - zombie.x) ? player : ai;
-
+        
         zombie.direction = zombie.x < target.x ? "right" : "left";
         zombie.x += zombie.direction === "right" ? zombie.dx : -zombie.dx;
 
@@ -504,7 +578,12 @@ function updateZombies() {
             zombie.y = groundY - zombie.height;
         }
 
-        handleCombat(zombie, target, 1, 1); 
+        if (!zombie.lastAttackTime || Date.now() - zombie.lastAttackTime >= 2000) {
+            handleCombat(zombie, target, 2, 1); // Attack every 2 seconds
+            zombie.lastAttackTime = Date.now();
+        } else {
+            zombie.state = "walk";
+        }
     });
 }
 
@@ -516,6 +595,8 @@ function updatePlayerAndAI() {
 document.addEventListener("keydown", (e) => {
     if (e.key === "f") {
         zombies.forEach((zombie) => handleCombat(player, zombie, 0.25, 10));
+
+
     }
 });
 
@@ -535,6 +616,52 @@ function drawZombies() {
         drawHealthBar(zombie, ctx);
     });
 }
+
+const moneyObjects = [];
+
+
+function drawMoney() {
+    moneyObjects.forEach((moneyObject) => {
+        const currentTime = performance.now();
+        const { frameWidth, frameHeight, frameCount } = moneySpriteSheet;
+
+        // Animate the money
+        if (currentTime - moneyObject.lastFrameChange > 100) {
+            moneyObject.frame = (moneyObject.frame + 1) % frameCount;
+            moneyObject.lastFrameChange = currentTime;
+            checkMoneyPickup(moneyObject.amount); // Check if player picks up the money
+        }
+
+        const spriteX = moneyObject.frame * frameWidth;
+
+        ctx.drawImage(
+            loadedMoneySpriteSheet,
+            spriteX,
+            0,
+            frameWidth,
+            frameHeight,
+            moneyObject.x,
+            moneyObject.y,
+            frameWidth,
+            frameHeight
+        );
+    });
+}
+
+function checkMoneyPickup() {
+    moneyObjects.forEach((money, index) => {
+        if (
+            player.x < money.x + moneySpriteSheet.frameWidth &&
+            player.x + player.width > money.x &&
+            player.y < money.y + moneySpriteSheet.frameHeight &&
+            player.y + player.height > money.y
+                ) {
+            addMoney(20); // Add 10 money on pickup
+            moneyObjects.splice(index, 1); // Remove the money object
+        }
+    });
+}
+
 
 function drawCheckpoints() {
   checkpoints.forEach((checkpoint) => {
@@ -561,14 +688,9 @@ function drawCheckpoints() {
       frameHeight
     );
 
-    if (checkpoint.activated) {
-      ctx.strokeStyle = "yellow"; // Indicate activation
-      ctx.lineWidth = 2;
-      ctx.strokeRect(checkpoint.x, checkpoint.y, frameWidth, frameHeight);
-    }
+
   });
 }
-
 function checkCheckpoints() {
   checkpoints.forEach((checkpoint) => {
     if (
@@ -583,6 +705,18 @@ function checkCheckpoints() {
       console.log("Checkpoint activated at:", player.checkpoint);
     }
   });
+}
+
+
+
+
+
+
+// Function to display money score
+function displayMoneyScore() {
+    ctx.font = '20px ownFont';
+    ctx.fillStyle = 'yellow';
+    ctx.fillText(`Money: ${money}`, 70, 30);
 }
 
 let gameRunning = false;
@@ -610,6 +744,7 @@ function animate() {
     checkPlayerDeath(); // Check if player needs to respawn
     checkFinishLine(); // Check if player reaches the finish line
     checkCheckpoints(); // Check player interaction with checkpoints
+    checkMoneyPickup(); // Check player interaction with money
 
     updateState(player, keys);
     updateState(ai, {});
@@ -618,15 +753,18 @@ function animate() {
     drawEntity(ai, ctx);
     drawZombies();
     drawFinishLine(); // Draw the finish line
+    drawStartDoor(); 
     drawCheckpoints(); // Draw checkpoints
+    drawMoney(); // Draw money objects
 
     drawHealthBar(player, ctx);
     drawHealthBar(ai, ctx);
 
+    // Display money score
+    displayMoneyScore();
+
     requestAnimationFrame(animate);
 }
-
-
 
 let currentLevel = 1;
 

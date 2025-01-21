@@ -28,7 +28,13 @@ function drawTutorialMessage() {
 
 function handleTutorialInput(e) {
     const message = tutorialMessages[tutorialStep];
-
+    if (tutorialStep === 0 && e.key === "K") {
+        gameRunning = true;
+        document.removeEventListener("keydown", handleTutorialInput);
+        document.querySelector("#playerInput").style.display = "none";
+        animate();
+        return;
+    }
     switch (message.action) {
         case "start":
             if (keys["Enter"]) {
@@ -122,7 +128,6 @@ inputField.addEventListener("keydown", (e) => {
         toggleInputField(false); // Hide input after submission
     }
 });
-checkpoints.push({ x: canvas.width / 1.5, y: groundY - 100, frame: 0, lastFrameChange: performance.now(), activated: false });
 
 // Detect tutorial question steps to show input field
 function checkTutorialStep() {
@@ -134,3 +139,28 @@ function checkTutorialStep() {
     }
 }
 setInterval(checkTutorialStep, 100);
+
+function loadLevel1() {
+    // Ensure groundY is defined
+    const groundY = canvas.height - 50; // Example value, adjust as needed
+    // Define level-specific properties
+    player.x = canvas.width / 4;
+    player.y = groundY - player.height;
+    ai.x = (canvas.width * 3) / 4;
+    ai.y = groundY - ai.height;
+
+    // Clear existing zombies, checkpoints, and money
+    zombies.length = 0;
+    checkpoints.length = 0;
+    moneyObjects.length = 0;
+
+    // Add level-specific checkpoints
+    checkpoints.push({ x: canvas.width / 1.5, y: groundY - 42, frame: 0, lastFrameChange: performance.now(), activated: false });
+
+    // Spawn initial wave of zombies (2 zombies, 1 second interval)
+    spawnZombieWave(2, 1000);
+
+    // Add money objects
+    moneyObjects.push({ x: canvas.width / 2, y: groundY - 24, frame: 0, lastFrameChange: performance.now() });
+    moneyObjects.push({ x: canvas.width / 3, y: groundY - 24, frame: 0, lastFrameChange: performance.now() });
+}
