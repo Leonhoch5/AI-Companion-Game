@@ -217,8 +217,8 @@ function drawFinishLine() {
 
     ctx.drawImage(
         spriteSheet,
-        finishLine.frame * frameWidth, // Frame x position on sprite sheet
-        0,                             // Frame y position
+        finishLine.frame * frameWidth, 
+        0,                             
         frameWidth,
         frameHeight,
         finishLine.x,
@@ -668,8 +668,8 @@ function checkMoneyPickup() {
             player.y < money.y + moneySpriteSheet.frameHeight &&
             player.y + player.height > money.y
                 ) {
-            addMoney(20); // Add 10 money on pickup
-            moneyObjects.splice(index, 1); // Remove the money object
+            addMoney(20);
+            moneyObjects.splice(index, 1); 
         }
     });
 }
@@ -720,7 +720,6 @@ function checkCheckpoints() {
 
 const doors = [
   { x: 100, y: groundY - 64, frame: 0, lastFrameChange: performance.now(), roomScript: "level1room1.js"},
-  // Add more doors as needed
 ];
 
 function drawDoors() {
@@ -763,7 +762,6 @@ function teleportPlayerToRoom(roomScript) {
   loadRoom(roomScript);
   console.log(`Teleported to ${roomScript}`);
 }
-
 function loadRoom(roomScript) {
   console.log(`Loading room script: levels/${roomScript}`);
   const script = document.createElement("script");
@@ -783,51 +781,49 @@ function displayMoneyScore() {
 
 let gameRunning = false;
 let gamePaused = false;
-
 function animate() {
-  if (!gameRunning) {
-    drawMenu();
-    return;
-  }
+    if (!gameRunning) {
+        drawMenu();
+        return;
+    }
 
-  if (gamePaused) {
-    drawPauseMenu();
-    return;
-  }
+    if (gamePaused) {
+        drawPauseMenu();
+        return;
+    }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawGround();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGround();
 
-  updatePlayer();
-  updateAI();
-  updateZombies();
-  updateCombat();
+    updatePlayer();
+    updateAI();
+    updateZombies();
+    updateCombat();
 
-  checkPlayerDeath(); // Check if player needs to respawn
-  checkFinishLine(); // Check if player reaches the finish line
-  checkCheckpoints(); // Check player interaction with checkpoints
-  checkMoneyPickup(); // Check player interaction with money
-  checkDoorInteraction(); // Check player interaction with doors
+    checkPlayerDeath();
+    checkFinishLine();
+    checkCheckpoints();
+    checkMoneyPickup();
+    checkDoorInteraction();
 
-  updateState(player, keys);
-  updateState(ai, {});
+    updateState(player, keys);
+    updateState(ai, {});
 
-  drawEntity(player, ctx);
-  drawEntity(ai, ctx);
-  drawZombies();
-  drawFinishLine(); // Draw the finish line
-  drawStartDoor();
-  drawCheckpoints(); // Draw checkpoints
-  drawMoney(); // Draw money objects
-  drawDoors(); // Draw doors
+    drawEntity(player, ctx);
+    drawEntity(ai, ctx);
+    drawZombies();
+    drawFinishLine();
+    drawStartDoor();
+    drawCheckpoints();
+    drawMoney();
+    drawDoors();
 
-  drawHealthBar(player, ctx);
-  drawHealthBar(ai, ctx);
+    drawHealthBar(player, ctx);
+    drawHealthBar(ai, ctx);
 
-  // Display money score
-  displayMoneyScore();
+    displayMoneyScore();
 
-  requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
 }
 
 let currentLevel = 1;
@@ -841,7 +837,6 @@ function loadLevel(levelNumber) {
     document.body.appendChild(script);
 }
 
-// Initialize the first level
 loadLevel(currentLevel);
 
 animate();
