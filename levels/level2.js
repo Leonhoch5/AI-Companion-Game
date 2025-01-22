@@ -20,3 +20,4 @@ function loadLevel2() {
     moneyObjects.push({ x: canvas.width / 2, y: groundY - 24, frame: 0, lastFrameChange: performance.now(),amount: 50 });
     moneyObjects.push({ x: canvas.width / 3, y: groundY - 24, frame: 0, lastFrameChange: performance.now(), amount: 20 });
 }
+

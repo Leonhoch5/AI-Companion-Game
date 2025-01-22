@@ -57,6 +57,12 @@ const moneySpriteSheet = {
   frameCount: 6,
 };
 
+const doorSpriteSheet = {
+  src: "assets/map/door1.png",
+  frameWidth: 64,
+  frameHeight: 64,
+  frameCount: 1,
+};
 
 let money = 0; // Initialize money score
 
@@ -115,6 +121,11 @@ loadedMoneySpriteSheet.src = moneySpriteSheet.src;
 loadedMoneySpriteSheet.onerror = () =>
   console.error(`Failed to load ${moneySpriteSheet.src}`);
 
+const loadedDoorSpriteSheet = new Image();
+loadedDoorSpriteSheet.src = doorSpriteSheet.src;
+loadedDoorSpriteSheet.onerror = () =>
+  console.error(`Failed to load ${doorSpriteSheet.src}`);
+
 // Function to spawn a wave of zombies
 function spawnZombieWave(count, interval) {
     let spawned = 0;
@@ -128,6 +139,7 @@ function spawnZombieWave(count, interval) {
         spawned++;
     }, interval);
 }
+
 
 
 // Finish line properties
@@ -668,7 +680,6 @@ function drawCheckpoints() {
     const currentTime = performance.now();
     const { frameWidth, frameHeight, frameCount } = checkpointSpriteSheet;
 
-    // Animate the checkpoint if it's not activated
     if (currentTime - checkpoint.lastFrameChange > 100) {
       checkpoint.frame = (checkpoint.frame + 1) % frameCount;
       checkpoint.lastFrameChange = currentTime;
@@ -707,10 +718,61 @@ function checkCheckpoints() {
   });
 }
 
+const doors = [
+  { x: 100, y: groundY - 64, frame: 0, lastFrameChange: performance.now(), roomScript: "level1room1.js"},
+  // Add more doors as needed
+];
 
+function drawDoors() {
+  doors.forEach((door) => {
+    const { frameWidth, frameHeight } = doorSpriteSheet;
+    const spriteX = door.frame * frameWidth;
 
+    ctx.drawImage(
+      loadedDoorSpriteSheet,
+      spriteX,
+      0,
+      frameWidth,
+      frameHeight,
+      door.x,
+      door.y,
+      frameWidth,
+      frameHeight
+    );
+  });
+}
 
+function checkDoorInteraction() {
+  doors.forEach((door) => {
+    if (
+      player.x < door.x + doorSpriteSheet.frameWidth &&
+      player.x + player.width > door.x &&
+      player.y < door.y + doorSpriteSheet.frameHeight &&
+      player.y + player.height > door.y
+    ) {
+      if (keys["o"]) {
+        console.log(`Interacting with door at (${door.x}, ${door.y}) with roomScript: ${door.roomScript}`);
+        teleportPlayerToRoom(door.roomScript);
+      }
+    }
+  });
+}
 
+function teleportPlayerToRoom(roomScript) {
+  console.log(`Teleporting player to room: ${roomScript}`);
+  loadRoom(roomScript);
+  console.log(`Teleported to ${roomScript}`);
+}
+
+function loadRoom(roomScript) {
+  console.log(`Loading room script: levels/${roomScript}`);
+  const script = document.createElement("script");
+  script.src = `levels/${roomScript}`;
+  script.onload = () => {
+    console.log(`Loaded room: ${roomScript}`);
+  };
+  document.body.appendChild(script);
+}
 
 // Function to display money score
 function displayMoneyScore() {
@@ -723,47 +785,49 @@ let gameRunning = false;
 let gamePaused = false;
 
 function animate() {
-    if (!gameRunning) {
-        drawMenu();
-        return;
-    }
+  if (!gameRunning) {
+    drawMenu();
+    return;
+  }
 
-    if (gamePaused) {
-        drawPauseMenu();
-        return;
-    }
+  if (gamePaused) {
+    drawPauseMenu();
+    return;
+  }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGround();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawGround();
 
-    updatePlayer();
-    updateAI();
-    updateZombies();
-    updateCombat();
+  updatePlayer();
+  updateAI();
+  updateZombies();
+  updateCombat();
 
-    checkPlayerDeath(); // Check if player needs to respawn
-    checkFinishLine(); // Check if player reaches the finish line
-    checkCheckpoints(); // Check player interaction with checkpoints
-    checkMoneyPickup(); // Check player interaction with money
+  checkPlayerDeath(); // Check if player needs to respawn
+  checkFinishLine(); // Check if player reaches the finish line
+  checkCheckpoints(); // Check player interaction with checkpoints
+  checkMoneyPickup(); // Check player interaction with money
+  checkDoorInteraction(); // Check player interaction with doors
 
-    updateState(player, keys);
-    updateState(ai, {});
+  updateState(player, keys);
+  updateState(ai, {});
 
-    drawEntity(player, ctx);
-    drawEntity(ai, ctx);
-    drawZombies();
-    drawFinishLine(); // Draw the finish line
-    drawStartDoor(); 
-    drawCheckpoints(); // Draw checkpoints
-    drawMoney(); // Draw money objects
+  drawEntity(player, ctx);
+  drawEntity(ai, ctx);
+  drawZombies();
+  drawFinishLine(); // Draw the finish line
+  drawStartDoor();
+  drawCheckpoints(); // Draw checkpoints
+  drawMoney(); // Draw money objects
+  drawDoors(); // Draw doors
 
-    drawHealthBar(player, ctx);
-    drawHealthBar(ai, ctx);
+  drawHealthBar(player, ctx);
+  drawHealthBar(ai, ctx);
 
-    // Display money score
-    displayMoneyScore();
+  // Display money score
+  displayMoneyScore();
 
-    requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 }
 
 let currentLevel = 1;
