@@ -9,41 +9,41 @@ const groundY = canvas.height - groundHeight;
 
 // Sprite sheet configurations for player and AI
 const playerSpriteSheets = {
-  idle: { src: "/assets/character/Fighter/Idle.png", frameWidth: 128, frameHeight: 128, frameCount: 8 },
-  walk: { src: "/assets/character/Fighter/Walk.png", frameWidth: 128, frameHeight: 128, frameCount: 7 },
-  jump: { src: "/assets/character/Fighter/Jump.png", frameWidth: 128, frameHeight: 128, frameCount: 8 },
-  crouch: { src: "/assets/character/Fighter/Attack_2.png", frameWidth: 128, frameHeight: 128, frameCount: 7 },
-  attack: { src: "/assets/character/Fighter/Attack_1.png", frameWidth: 128, frameHeight: 128, frameCount: 7 },
-  hurt: { src: "/assets/character/Fighter/Hurt.png", frameWidth: 128, frameHeight: 128, frameCount: 3 },
+  idle: { src: "/AI-Companion-Game/assets/character/Fighter/Idle.png", frameWidth: 128, frameHeight: 128, frameCount: 8 },
+  walk: { src: "/AI-Companion-Game/assets/character/Fighter/Walk.png", frameWidth: 128, frameHeight: 128, frameCount: 7 },
+  jump: { src: "/AI-Companion-Game/assets/character/Fighter/Jump.png", frameWidth: 128, frameHeight: 128, frameCount: 8 },
+  crouch: { src: "/AI-Companion-Game/assets/character/Fighter/Attack_2.png", frameWidth: 128, frameHeight: 128, frameCount: 7 },
+  attack: { src: "/AI-Companion-Game/assets/character/Fighter/Attack_1.png", frameWidth: 128, frameHeight: 128, frameCount: 7 },
+  hurt: { src: "/AI-Companion-Game/assets/character/Fighter/Hurt.png", frameWidth: 128, frameHeight: 128, frameCount: 3 },
 };
 
 const aiSpriteSheets = {
-  idle: { src: "/assets/character/Samurai/Idle.png", frameWidth: 128, frameHeight: 128, frameCount: 7 },
-  walk: { src: "/assets/character/Samurai/Walk.png", frameWidth: 128, frameHeight: 128, frameCount: 6 },
-  jump: { src: "/assets/character/Samurai/Jump.png", frameWidth: 128, frameHeight: 128, frameCount: 9 },
-  crouch: { src: "/assets/character/Samurai/Attack_1.png", frameWidth: 128, frameHeight: 128, frameCount: 2 },
-  attack: { src: "/assets/character/Samurai/Attack_2.png", frameWidth: 128, frameHeight: 128, frameCount: 4 },
-  hurt: { src: "/assets/character/Samurai/Hurt.png", frameWidth: 128, frameHeight: 128, frameCount: 3 },
+  idle: { src: "/AI-Companion-Game/assets/character/Samurai/Idle.png", frameWidth: 128, frameHeight: 128, frameCount: 7 },
+  walk: { src: "/AI-Companion-Game/assets/character/Samurai/Walk.png", frameWidth: 128, frameHeight: 128, frameCount: 6 },
+  jump: { src: "/AI-Companion-Game/assets/character/Samurai/Jump.png", frameWidth: 128, frameHeight: 128, frameCount: 9 },
+  crouch: { src: "/AI-Companion-Game/assets/character/Samurai/Attack_1.png", frameWidth: 128, frameHeight: 128, frameCount: 2 },
+  attack: { src: "/AI-Companion-Game/assets/character/Samurai/Attack_2.png", frameWidth: 128, frameHeight: 128, frameCount: 4 },
+  hurt: { src: "/AI-Companion-Game/assets/character/Samurai/Hurt.png", frameWidth: 128, frameHeight: 128, frameCount: 3 },
 };
 
 const zombieSpriteSheets = {
-  idle: { src: "/assets/character/Zombie/Idle.png", frameWidth: 96, frameHeight: 96, frameCount: 8 },
-  walk: { src: "/assets/character/Zombie/Walk.png", frameWidth: 96, frameHeight: 96, frameCount: 8 },
-  jump: { src: "/assets/character/Zombie/Jump.png", frameWidth: 96, frameHeight: 96, frameCount: 8 },
-  crouch: { src: "/assets/character/Zombie/Bite.png", frameWidth: 96, frameHeight: 96, frameCount: 2 },
-  attack: { src: "/assets/character/Zombie/Attack_2.png", frameWidth: 96, frameHeight: 96, frameCount: 4 },
-  hurt: { src: "/assets/character/Zombie/Hurt.png", frameWidth: 96, frameHeight: 96, frameCount: 3 },
+  idle: { src: "/AI-Companion-Game/assets/character/Zombie/Idle.png", frameWidth: 96, frameHeight: 96, frameCount: 8 },
+  walk: { src: "/AI-Companion-Game/assets/character/Zombie/Walk.png", frameWidth: 96, frameHeight: 96, frameCount: 8 },
+  jump: { src: "/AI-Companion-Game/assets/character/Zombie/Jump.png", frameWidth: 96, frameHeight: 96, frameCount: 8 },
+  crouch: { src: "/AI-Companion-Game/assets/character/Zombie/Bite.png", frameWidth: 96, frameHeight: 96, frameCount: 2 },
+  attack: { src: "/AI-Companion-Game/assets/character/Zombie/Attack_2.png", frameWidth: 96, frameHeight: 96, frameCount: 4 },
+  hurt: { src: "/AI-Companion-Game/assets/character/Zombie/Hurt.png", frameWidth: 96, frameHeight: 96, frameCount: 3 },
 };
 const cardSpriteSheets = {
-    rotating: { src: "/assets/map/Walls2.png", frameWidth: 64, frameHeight: 64, frameCount: 1},
+    rotating: { src: "/AI-Companion-Game/assets/map/Walls2.png", frameWidth: 64, frameHeight: 64, frameCount: 1},
 };
 
 const startDoorSpriteSheets = {
-    rotating: { src: "/assets/map/Walls1.png", frameWidth: 64, frameHeight: 64, frameCount: 1},
+    rotating: { src: "/AI-Companion-Game/assets/map/Walls1.png", frameWidth: 64, frameHeight: 64, frameCount: 1},
 };
 
 const checkpointSpriteSheet = {
-  src: "/assets/map/Checkpoint.png", // Replace with your checkpoint sprite image
+  src: "/AI-Companion-Game/assets/map/Checkpoint.png", // Replace with your checkpoint sprite image
   frameWidth: 48,
   frameHeight: 48,
   frameCount: 1, 
@@ -51,14 +51,14 @@ const checkpointSpriteSheet = {
 
 // Define the money sprite sheet
 const moneySpriteSheet = {
-  src: "/assets/map/Money.png", // Replace with your money sprite image
+  src: "/AI-Companion-Game/assets/map/Money.png", // Replace with your money sprite image
   frameWidth: 24,
   frameHeight: 24,
   frameCount: 6,
 };
 
 const doorSpriteSheet = {
-  src: "assets/map/door1.png",
+  src: "/AI-Companion-Game/assets/map/door1.png",
   frameWidth: 64,
   frameHeight: 64,
   frameCount: 1,
