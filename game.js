@@ -605,14 +605,6 @@ function updatePlayerAndAI() {
     handleCombat(ai, player, 1, 10); 
 }
 
-document.addEventListener("keydown", (e) => {
-    if (e.key === "f") {
-        zombies.forEach((zombie) => handleCombat(player, zombie, 0.25, 10));
-
-
-    }
-});
-
 function updateCombat() {
     if (player.state === "attack") {
         zombies.forEach((zombie) => handleCombat(player, zombie, 0.25, 10));

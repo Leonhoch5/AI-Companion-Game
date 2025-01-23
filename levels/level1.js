@@ -28,7 +28,7 @@ function drawTutorialMessage() {
 
 function handleTutorialInput(e) {
     const message = tutorialMessages[tutorialStep];
-    if (tutorialStep === 0 && e.key === "K") {
+    if (tutorialStep === 0 && e.key === "k") {
         gameRunning = true;
         document.removeEventListener("keydown", handleTutorialInput);
         document.querySelector("#playerInput").style.display = "none";
