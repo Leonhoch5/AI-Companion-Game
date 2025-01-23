@@ -570,7 +570,6 @@ function handleCombat(attacker, target, cooldownInSec, damage) {
 // Update zombies
 function updateZombies() {
     zombies.forEach((zombie, index) => {
-        console.log(zombie.health)
         if (zombie.health <= 0 || zombie.health === NaN) {
             zombies.splice(index, 1); 
             return;
